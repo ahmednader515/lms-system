@@ -9,14 +9,7 @@ import MuxPlayer from "@mux/mux-player-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 
-interface ChapterPageProps {
-  params: {
-    courseId: string;
-    chapterId: string;
-  };
-}
-
-const ChapterPage = ({ params }: ChapterPageProps) => {
+const ChapterPage = () => {
   const router = useRouter();
   const routeParams = useParams() as { courseId: string; chapterId: string };
   const [chapter, setChapter] = useState<any>(null);

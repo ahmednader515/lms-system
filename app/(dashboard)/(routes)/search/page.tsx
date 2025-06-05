@@ -9,32 +9,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { Course, Purchase } from "@prisma/client";
 
-interface SearchPageProps {
-    searchParams: {
-        title: string;
-    };
-}
-
 type CourseWithDetails = Course & {
     chapters: { id: string }[];
     purchases: Purchase[];
     progress: number;
 }
 
-const SearchPage = async ({
-    searchParams
-}: SearchPageProps) => {
+type Props = {
+    searchParams: { title?: string }
+}
+
+export default async function SearchPage({ searchParams }: Props) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
         return redirect("/");
     }
 
+    const title = typeof searchParams.title === 'string' ? searchParams.title : '';
+
     const courses = await db.course.findMany({
         where: {
             isPublished: true,
             title: {
-                contains: searchParams.title,
+                contains: title,
             }
         },
         include: {
@@ -90,8 +88,8 @@ const SearchPage = async ({
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold mb-2">البحث عن الدورات</h1>
                     <p className="text-muted-foreground">
-                        {searchParams.title 
-                            ? `نتائج البحث عن "${searchParams.title}"`
+                        {title 
+                            ? `نتائج البحث عن "${title}"`
                             : "اكتشف مجموعة متنوعة من الدورات التعليمية المميزة"
                         }
                     </p>
@@ -162,6 +160,4 @@ const SearchPage = async ({
             </div>
         </>
     );
-};
-
-export default SearchPage;
+}
