@@ -425,7 +425,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 <p className="text-muted-foreground">
-                  "{testimonial.testimonial}"
+                  &ldquo;{testimonial.testimonial}&rdquo;
                 </p>
                 <div className="flex mt-4">
                   {[1, 2, 3, 4, 5].map((star) => (
