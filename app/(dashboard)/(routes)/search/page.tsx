@@ -15,11 +15,11 @@ type CourseWithDetails = Course & {
     progress: number;
 }
 
-type Props = {
+export default async function SearchPage({
+    searchParams,
+}: {
     searchParams: { title?: string }
-}
-
-export default async function SearchPage({ searchParams }: Props) {
+}) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
