@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     });
 
     // Send OTP email
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: "LMS <onboarding@resend.dev>",
       to: email,
       subject: "رمز التحقق الخاص بك",

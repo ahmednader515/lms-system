@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Check, X, Eye, EyeOff, ChevronLeft } from "lucide-react";
 
 export default function SignUpPage() {
@@ -67,8 +67,9 @@ export default function SignUpPage() {
         setShowOtpInput(true);
         toast.success("تم إرسال رمز التحقق إلى بريدك الإلكتروني");
       }
-    } catch (error: any) {
-      if (error.response?.status === 409) {
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.status === 409) {
         toast.error("البريد الإلكتروني مسجل مسبقاً");
       } else {
         toast.error("حدث خطأ أثناء إنشاء الحساب");
@@ -92,7 +93,7 @@ export default function SignUpPage() {
         toast.success("تم التحقق من بريدك الإلكتروني بنجاح");
         router.push("/sign-in");
       }
-    } catch (error) {
+    } catch {
       toast.error("رمز التحقق غير صالح أو منتهي الصلاحية");
     } finally {
       setIsLoading(false);
@@ -111,7 +112,7 @@ export default function SignUpPage() {
       if (response.data.success) {
         toast.success("تم إعادة إرسال رمز التحقق");
       }
-    } catch (error) {
+    } catch {
       toast.error("حدث خطأ أثناء إعادة إرسال رمز التحقق");
     } finally {
       setIsLoading(false);

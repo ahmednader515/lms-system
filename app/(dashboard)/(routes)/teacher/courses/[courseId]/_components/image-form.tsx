@@ -17,12 +17,6 @@ interface ImageFormProps {
     courseId: string;
 }
 
-const formSchema = z.object({
-    imageUrl: z.string().min(1, {
-        message: "Image is required",
-    }),
-});
-
 export const ImageForm = ({
     initialData,
     courseId
@@ -34,7 +28,7 @@ export const ImageForm = ({
 
     const router = useRouter();
 
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const onSubmit = async (values: { imageUrl: string }) => {
         try {
             await axios.patch(`/api/courses/${courseId}`, values);
             toast.success("تم تحديث الدورة");

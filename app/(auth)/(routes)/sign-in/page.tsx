@@ -56,7 +56,7 @@ export default function SignInPage() {
       toast.success("تم تسجيل الدخول بنجاح");
       router.refresh();
       router.push("/dashboard");
-    } catch (error) {
+    } catch {
       toast.error("حدث خطأ أثناء تسجيل الدخول");
     } finally {
       setIsLoading(false);

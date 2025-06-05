@@ -10,7 +10,6 @@ const CourseLayout = ({
     children: React.ReactNode;
 }) => {
     const params = useParams();
-    const courseId = params.courseId as string;
 
     return (
         <div className="h-full">

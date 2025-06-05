@@ -25,8 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpDown, Pencil, Trash2, Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Pencil, Trash2, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -87,7 +86,7 @@ export function CoursesTable<TData extends { id: string }, TValue>({
 
             toast.success("تم حذف الدورة بنجاح");
             router.refresh();
-        } catch (error) {
+        } catch {
             toast.error("حدث خطأ");
         }
     };

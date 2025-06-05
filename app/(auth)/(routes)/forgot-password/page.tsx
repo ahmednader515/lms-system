@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -26,8 +26,9 @@ export default function ForgotPasswordPage() {
         setIsEmailSent(true);
         toast.success("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني");
       }
-    } catch (error: any) {
-      if (error.response?.status === 404) {
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response?.status === 404) {
         toast.error("لم يتم العثور على حساب بهذا البريد الإلكتروني");
       } else {
         toast.error("حدث خطأ أثناء إرسال البريد الإلكتروني");

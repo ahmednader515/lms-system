@@ -8,9 +8,7 @@ import Image from "next/image";
 import { Navbar } from "@/components/navbar";
 import { ScrollProgress } from "@/components/scroll-progress";
 import { useEffect, useState } from "react";
-import { Course, Chapter, Purchase } from "@prisma/client";
-import { AnimatedDivider } from "@/components/animated-divider";
-import { Progress } from "@/components/ui/progress";
+import { Course, Purchase } from "@prisma/client";
 import { db } from "@/lib/db"; // Import db client
 
 type CourseWithProgress = Course & {
@@ -127,7 +125,7 @@ export default function HomePage() {
               نادر غزال
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-              منصة تعليمية متكاملة لتبسيط المواد الدراسية
+              &ldquo;نادر غزال&rdquo; هو منصة تعليمية متكاملة تهدف إلى تبسيط المواد الدراسية
             </p>
             <Button size="lg" asChild className="bg-[#BC8B26] hover:bg-[#BC8B26]/90 text-white">
               <Link href="/sign-up">

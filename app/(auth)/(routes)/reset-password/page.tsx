@@ -71,7 +71,7 @@ const ResetPasswordPage = () => {
 
       toast.success("تم إعادة تعيين كلمة المرور بنجاح");
       router.push("/sign-in");
-    } catch (error) {
+    } catch {
       toast.error("حدث خطأ أثناء إعادة تعيين كلمة المرور");
     } finally {
       setIsLoading(false);

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Chapter, Course } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import { Pencil, PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { ChaptersList } from "./chapters-list";

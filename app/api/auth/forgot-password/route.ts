@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`;
 
     // Send reset password email
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: "LMS <onboarding@resend.dev>",
       to: email,
       subject: "إعادة تعيين كلمة المرور",

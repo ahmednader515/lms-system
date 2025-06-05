@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { ChapterForm } from "./_components/chapter-form";
 import { VideoForm } from "./_components/video-form";
 import Link from "next/link";
-import { ArrowLeft, LayoutDashboard, Video } from "lucide-react";
+import { ArrowLeft, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IconBadge } from "@/components/icon-badge";
 

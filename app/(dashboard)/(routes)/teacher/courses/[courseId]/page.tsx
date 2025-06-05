@@ -1,7 +1,7 @@
 import { IconBadge } from "@/components/icon-badge";
 import { db } from "@/lib/db"
 import { auth } from "@/lib/auth"
-import { CircleDollarSign, File, LayoutDashboard, ListCheck, Eye, EyeOff, AlertTriangle } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 import { redirect } from "next/navigation";
 import { TitleForm } from "./_components/title-form";
 import { DescriptionForm } from "./_components/description-form";
@@ -11,7 +11,6 @@ import { AttachmentForm } from "./_components/attachment-form";
 import { ChaptersForm } from "./_components/chapters-form";
 import { Banner } from "@/components/banner";
 import { Actions } from "./_components/actions";
-import { AttachmentsForm } from "./_components/attachments-form";
 
 const CourseIdPage = async ({
     params

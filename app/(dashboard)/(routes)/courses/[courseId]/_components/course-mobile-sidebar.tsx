@@ -6,7 +6,6 @@ import { IconBadge } from "@/components/icon-badge";
 import { Button } from "@/components/ui/button";
 
 interface CourseMobileSidebarProps {
-    courseId: string;
     chapters: {
         id: string;
         title: string;
@@ -17,7 +16,6 @@ interface CourseMobileSidebarProps {
 }
 
 export const CourseMobileSidebar = ({
-    courseId,
     chapters,
     progressCount,
 }: CourseMobileSidebarProps) => {

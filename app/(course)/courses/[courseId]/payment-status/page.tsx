@@ -4,8 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { CheckCircle, XCircle } from "lucide-react";
+
+interface PaymentResponse {
+  status: "COMPLETED" | "FAILED" | "PENDING";
+  purchase?: {
+    status: "ACTIVE" | "FAILED" | "PENDING";
+  };
+}
 
 const PaymentStatusPage = () => {
   const router = useRouter();
@@ -16,7 +22,6 @@ const PaymentStatusPage = () => {
   const courseId = searchParams.get("courseId") || routeParams.courseId;
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [checkCount, setCheckCount] = useState(0);
-  const [lastResponse, setLastResponse] = useState<any>(null);
   const MAX_CHECKS = 12; // Check for 1 minute (12 * 5 seconds)
 
   useEffect(() => {
@@ -31,8 +36,7 @@ const PaymentStatusPage = () => {
         console.log(`[PAYMENT_STATUS] Check #${checkCount + 1} for purchaseId: ${purchaseId}`);
         
         // Check payment status from our database
-        const response = await axios.get(`/api/payments/${purchaseId}`);
-        setLastResponse(response.data);
+        const response = await axios.get<PaymentResponse>(`/api/payments/${purchaseId}`);
         console.log("[PAYMENT_STATUS] Response:", response.data);
         
         // Check both payment status and purchase status

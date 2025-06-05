@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Try to send OTP email first
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: "LMS <onboarding@resend.dev>",
       to: email,
       subject: "رمز التحقق الخاص بك",
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     // Only create user if email was sent successfully
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    const user = await db.user.create({
+    await db.user.create({
       data: {
         email,
         name,

@@ -15,11 +15,6 @@ interface AttachmentFormProps {
     courseId: string;
 }
 
-const formSchema = z.object({
-    url: z.string().min(1),
-    name: z.string().min(1),
-});
-
 export const AttachmentForm = ({
     initialData,
     courseId
@@ -31,7 +26,7 @@ export const AttachmentForm = ({
 
     const router = useRouter();
 
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const onSubmit = async (values: { url: string; name: string }) => {
         try {
             await axios.post(`/api/courses/${courseId}/attachments`, values);
             toast.success("Course updated");

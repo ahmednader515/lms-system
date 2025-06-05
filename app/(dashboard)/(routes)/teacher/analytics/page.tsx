@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-// @ts-ignore
 import { Bar, Pie } from 'react-chartjs-2';
-// @ts-ignore
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -39,13 +37,26 @@ interface CourseAnalytic {
   completionRate: number;
 }
 
+interface ChartDataset {
+  label: string;
+  data: number[];
+  backgroundColor: string | string[];
+  borderColor?: string | string[];
+  borderWidth?: number;
+}
+
+interface ChartData {
+  labels: string[];
+  datasets: ChartDataset[];
+}
+
 interface AnalyticsData {
   totalRevenue: number;
   totalSales: number;
   courseCount: number;
   courseAnalytics: CourseAnalytic[];
-  revenueData: any;
-  salesData: any;
+  revenueData: ChartData;
+  salesData: ChartData;
 }
 
 const AnalyticsPage = () => {

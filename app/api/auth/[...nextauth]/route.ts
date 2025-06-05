@@ -4,9 +4,11 @@ import { db } from "@/lib/db";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import NextAuth from "next-auth/next";
+import { Adapter } from "next-auth/adapters";
+import { JWT } from "next-auth/jwt";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(db) as any,
+  adapter: PrismaAdapter(db) as Adapter,
   session: {
     strategy: "jwt",
   },
@@ -78,7 +80,7 @@ export const authOptions: NextAuthOptions = {
 
       return session;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user }): Promise<JWT> {
       const dbUser = await db.user.findFirst({
         where: {
           email: token.email as string,
@@ -98,7 +100,7 @@ export const authOptions: NextAuthOptions = {
         email: dbUser.email,
         phoneNumber: dbUser.phoneNumber,
         role: dbUser.role,
-      };
+      } as JWT;
     },
   },
 };

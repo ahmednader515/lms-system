@@ -36,7 +36,7 @@ export default function VerifyEmailPage() {
 
         setIsVerified(true);
         toast.success("تم التحقق من البريد الإلكتروني بنجاح");
-      } catch (error) {
+      } catch {
         toast.error("فشل التحقق من البريد الإلكتروني");
       } finally {
         setIsVerifying(false);

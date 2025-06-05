@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { File, Loader2, PlusCircle, X } from "lucide-react";
+import { File, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import axios from "axios";
 import { UploadButton } from "@/lib/uploadthing";
-import { cn } from "@/lib/utils";
 
 interface AttachmentsFormProps {
     initialData: {
@@ -61,7 +60,7 @@ export const AttachmentsForm = ({
                                 });
                                 toast.success("تم رفع الملف");
                                 router.refresh();
-                            } catch (error) {
+                            } catch {
                                 toast.error("حدث خطأ");
                             }
                         }

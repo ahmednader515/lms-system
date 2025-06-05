@@ -68,4 +68,9 @@ export const CourseSidebar = ({
             </Link>
           );
         })}
- 
+      </div>
+    </div>
+  );
+};
+
+export default CourseSidebar; 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
@@ -15,17 +14,27 @@ interface PurchasePageProps {
   }>;
 }
 
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  chapters: {
+    id: string;
+    title: string;
+  }[];
+}
+
 const PurchasePage = ({ params }: PurchasePageProps) => {
-  const router = useRouter();
   const { courseId } = use(params);
-  const [course, setCourse] = useState<any>(null);
+  const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const response = await axios.get(`/api/courses/${courseId}`);
+        const response = await axios.get<Course>(`/api/courses/${courseId}`);
         setCourse(response.data);
       } catch (error) {
         console.error("Error fetching course:", error);

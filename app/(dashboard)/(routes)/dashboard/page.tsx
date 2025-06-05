@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { BookOpen, PlayCircle } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Course, Purchase } from "@prisma/client";

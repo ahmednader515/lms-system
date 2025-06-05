@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { CheckCircle, Circle } from "lucide-react";
 import axios from "axios";
@@ -33,7 +33,7 @@ export const CourseSidebar = ({ course }: CourseSidebarProps) => {
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const [courseTitle, setCourseTitle] = useState<string>("");
 
-  const fetchCourseData = async () => {
+  const fetchCourseData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -53,11 +53,11 @@ export const CourseSidebar = ({ course }: CourseSidebarProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [course?.id, params.courseId]);
 
   useEffect(() => {
     fetchCourseData();
-  }, [course?.id, params.courseId]);
+  }, [fetchCourseData]);
 
   useEffect(() => {
     // Update selected chapter based on current path

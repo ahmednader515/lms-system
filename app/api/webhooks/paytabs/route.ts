@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     console.log("[PAYTABS_WEBHOOK] Received webhook:", JSON.stringify(body, null, 2));
     
     // Verify that this is a valid PayTabs callback
-    const { tran_ref, respStatus, respCode, respMessage } = body;
+    const { tran_ref, respStatus, respCode } = body;
 
     if (!tran_ref) {
       console.error("[PAYTABS_WEBHOOK] Missing transaction reference");
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     console.log(`[PAYTABS_WEBHOOK] Processing transaction: ${tran_ref}`);
 
     // Verify payment with PayTabs
-    const paymentDetails = await verifyPayment(tran_ref);
+    await verifyPayment(tran_ref);
     
     // Find the corresponding payment in our database
     const payment = await db.payment.findUnique({

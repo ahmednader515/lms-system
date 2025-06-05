@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Actions } from "./actions";
 import { Pencil, Globe } from "lucide-react";
 
 const formSchema = z.object({
@@ -44,8 +43,6 @@ export const CourseForm = ({
             description: initialData.description || "",
         },
     });
-
-    const { isSubmitting, isValid } = form.formState;
 
     const toggleEdit = () => setIsEditing((current) => !current);
 

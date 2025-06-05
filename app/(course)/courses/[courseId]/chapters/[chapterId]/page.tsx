@@ -2,17 +2,32 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, CheckCircle2, Circle, Lock } from "lucide-react";
 import MuxPlayer from "@mux/mux-player-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 
+interface Chapter {
+  id: string;
+  title: string;
+  description: string | null;
+  isFree: boolean;
+  muxData?: {
+    playbackId: string;
+  };
+  nextChapterId?: string;
+  previousChapterId?: string;
+  userProgress?: {
+    isCompleted: boolean;
+  }[];
+}
+
 const ChapterPage = () => {
   const router = useRouter();
   const routeParams = useParams() as { courseId: string; chapterId: string };
-  const [chapter, setChapter] = useState<any>(null);
+  const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   const [courseProgress, setCourseProgress] = useState(0);
@@ -31,16 +46,17 @@ const ChapterPage = () => {
         setIsCompleted(chapterResponse.data.userProgress?.[0]?.isCompleted || false);
         setCourseProgress(progressResponse.data.progress);
         setHasAccess(accessResponse.data.hasAccess);
-      } catch (error: any) {
-        console.error("Error fetching data:", error);
-        if (error.response) {
-          console.error("Error response:", error.response.data);
-          toast.error(`فشل تحميل الفصل: ${error.response.data}`);
-        } else if (error.request) {
-          console.error("Error request:", error.request);
+      } catch (error) {
+        const axiosError = error as AxiosError;
+        console.error("Error fetching data:", axiosError);
+        if (axiosError.response) {
+          console.error("Error response:", axiosError.response.data);
+          toast.error(`فشل تحميل الفصل: ${axiosError.response.data}`);
+        } else if (axiosError.request) {
+          console.error("Error request:", axiosError.request);
           toast.error("فشل الاتصال بالخادم");
         } else {
-          console.error("Error message:", error.message);
+          console.error("Error message:", axiosError.message);
           toast.error("حدث خطأ غير معروف");
         }
       } finally {

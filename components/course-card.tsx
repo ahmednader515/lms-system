@@ -1,15 +1,8 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/format";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import axios from "axios";
-import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Clock, Tag, Users } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -20,10 +13,6 @@ interface CourseCardProps {
     chaptersLength: number;
     price: number;
     progress: number | null;
-    user: {
-        name: string;
-        image: string;
-    };
 }
 
 export const CourseCard = ({
@@ -33,31 +22,8 @@ export const CourseCard = ({
     chaptersLength,
     price,
     progress,
-    user,
 }: CourseCardProps) => {
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleClick = async () => {
-        if (progress === null) {
-            setIsLoading(true);
-            try {
-                const response = await axios.get(`/api/courses/${id}/chapters/${chaptersLength}`);
-                const chapter = response.data;
-                
-                if (chapter.isFree) {
-                    router.push(`/courses/${id}/chapters/${chaptersLength}`);
-                } else {
-                    router.push(`/courses/${id}/purchase`);
-                }
-            } catch (error) {
-                console.error("Error checking chapter access:", error);
-                toast.error("فشل الوصول إلى الدورة");
-            } finally {
-                setIsLoading(false);
-            }
-        }
-    };
 
     return (
         <Link href={`/courses/${id}`}>
