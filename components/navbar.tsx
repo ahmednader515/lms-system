@@ -30,11 +30,16 @@ export const Navbar = () => {
             <ModeToggle />
             {!session ? (
               <>
-                <Button variant="ghost" asChild>
-                  <Link href="/sign-in">تسجيل الدخول</Link>
+                <Button className="bg-[#BC8B26] hover:bg-[#BC8B26]/90 text-white" asChild>
+                  <Link href="/sign-up">انشاء الحساب</Link>
                 </Button>
-                <Button asChild>
-                  <Link href="/sign-up">إنشاء حساب</Link>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  asChild
+                  className="border-[#BC8B26] dark:border-[#BC8B26] text-[#BC8B26] dark:text-[#BC8B26] hover:bg-[#BC8B26]/10"
+                >
+                  <Link href="/sign-in">تسجيل الدخول</Link>
                 </Button>
               </>
             ) : (

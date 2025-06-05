@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import { TitleForm } from "./_components/title-form";
 import { DescriptionForm } from "./_components/description-form";
 import { ImageForm } from "./_components/image-form";
-import { CategoryForm } from "./_components/category-form";
 import { PriceForm } from "./_components/price-form";
 import { AttachmentForm } from "./_components/attachment-form";
 import { ChaptersForm } from "./_components/chapters-form";
@@ -20,7 +19,6 @@ const CourseIdPage = async ({
     params: { courseId: string }
 }) => {
     const { userId } = await auth();
-    const { courseId } = params;
 
     if (!userId) {
         return redirect("/");
@@ -28,7 +26,7 @@ const CourseIdPage = async ({
 
     const course = await db.course.findUnique({
         where: {
-            id: courseId,
+            id: params.courseId,
             userId
         },
         include: {
@@ -45,12 +43,6 @@ const CourseIdPage = async ({
         }
     });
 
-    const categories = await db.category.findMany({
-        orderBy: {
-            name: "asc",
-        },
-    });
-
     if (!course) {
         return redirect("/");
     }
@@ -60,8 +52,7 @@ const CourseIdPage = async ({
         course.description,
         course.imageUrl,
         course.price,
-        course.categoryId,
-        course.chapters.some(chapter => chapter.isPublished),
+        course.chapters.some(chapter => chapter.isPublished)
     ];
 
     const totalFields = requiredFields.length;
@@ -75,7 +66,8 @@ const CourseIdPage = async ({
         <>
             {!course.isPublished && (
                 <Banner
-                    label="هذه الدورة غير منشورة. سيكون غير مرئي للطلاب."
+                    variant="warning"
+                    label="هذه الدورة غير منشورة. لن تكون مرئية للطلاب."
                 />
             )}
             <div className="p-6">
@@ -90,7 +82,7 @@ const CourseIdPage = async ({
                     </div>
                     <Actions
                         disabled={!isComplete}
-                        courseId={courseId}
+                        courseId={params.courseId}
                         isPublished={course.isPublished}
                     />
                 </div>
@@ -99,7 +91,7 @@ const CourseIdPage = async ({
                         <div className="flex items-center gap-x-2">
                             <IconBadge icon={LayoutDashboard} />
                             <h2 className="text-xl">
-                                تخصيص الدورة
+                                تخصيص دورتك
                             </h2>
                         </div>
                         <TitleForm
@@ -114,48 +106,24 @@ const CourseIdPage = async ({
                             initialData={course}
                             courseId={course.id}
                         />
-                        <CategoryForm
+                        <PriceForm
                             initialData={course}
                             courseId={course.id}
-                            options={categories.map((category) => ({
-                                label: category.name,
-                                value: category.id,
-                            }))}
                         />
                     </div>
                     <div className="space-y-6">
                         <div>
                             <div className="flex items-center gap-x-2">
-                                <IconBadge icon={ListCheck} />
+                                <IconBadge icon={LayoutDashboard} />
                                 <h2 className="text-xl">
-                                    الفصول
+                                    الموارد والفصول
                                 </h2>
                             </div>
                             <ChaptersForm
                                 initialData={course}
                                 courseId={course.id}
                             />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-x-2">
-                                <IconBadge icon={CircleDollarSign} />
-                                <h2 className="text-xl">
-                                    بيع الدورة
-                                </h2>
-                            </div>
-                            <PriceForm
-                                initialData={course}
-                                courseId={course.id}
-                            />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-x-2">
-                                <IconBadge icon={File} />
-                                <h2 className="text-xl">
-                                    الملفات والمرفقات
-                                </h2>
-                            </div>
-                            <AttachmentsForm
+                            <AttachmentForm
                                 initialData={course}
                                 courseId={course.id}
                             />

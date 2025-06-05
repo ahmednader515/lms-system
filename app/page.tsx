@@ -8,23 +8,64 @@ import Image from "next/image";
 import { Navbar } from "@/components/navbar";
 import { ScrollProgress } from "@/components/scroll-progress";
 import { useEffect, useState } from "react";
-import { Course, Chapter } from "@prisma/client";
+import { Course, Chapter, Purchase } from "@prisma/client";
+import { AnimatedDivider } from "@/components/animated-divider";
+import { Progress } from "@/components/ui/progress";
+import { db } from "@/lib/db"; // Import db client
 
-type CourseWithChapters = Course & {
-  chapters?: Chapter[];
+type CourseWithProgress = Course & {
+  chapters: { id: string }[]; // Ensure chapters is an array of objects with id
+  purchases: Purchase[];
+  progress: number;
 };
 
 export default function HomePage() {
-  const [courses, setCourses] = useState<CourseWithChapters[]>([]);
+  const [courses, setCourses] = useState<CourseWithProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await fetch("/api/courses");
+        // Fetch courses from API endpoint that includes purchases and calculates progress
+        const response = await fetch("/api/courses?includeProgress=true"); // Assuming an API endpoint or will create one if needed
         const data = await response.json();
-        setCourses(data);
+
+        // Calculate progress if not already done by API
+        const coursesWithCalculatedProgress = await Promise.all(
+          data.map(async (course: Course & { chapters?: { id: string }[]; purchases?: Purchase[] }) => {
+            const totalChapters = course.chapters?.length || 0;
+            let completedChapters = 0;
+
+            if (course.purchases && course.purchases.length > 0 && course.chapters) {
+               // Fetch user progress only if the user has purchased the course
+              const userProgress = await db.userProgress.count({
+                where: {
+                  userId: "YOUR_USER_ID", // **NEED TO GET ACTUAL USER ID HERE**
+                  chapterId: {
+                    in: course.chapters.map(chapter => chapter.id)
+                  },
+                  isCompleted: true
+                }
+              });
+              completedChapters = userProgress;
+            }
+
+            const progress = totalChapters > 0 
+              ? (completedChapters / totalChapters) * 100 
+              : 0;
+
+            return {
+              ...course,
+              progress,
+              chapters: course.chapters || [], // Ensure chapters is always an array
+              purchases: course.purchases || [] // Ensure purchases is always an array
+            } as CourseWithProgress;
+          })
+        );
+
+        setCourses(coursesWithCalculatedProgress);
+
       } catch (error) {
         console.error("Error fetching courses:", error);
       } finally {
@@ -60,7 +101,11 @@ export default function HomePage() {
   const scrollToCourses = () => {
     const coursesSection = document.getElementById('courses-section');
     if (coursesSection) {
-      coursesSection.scrollIntoView({ behavior: 'smooth' });
+      const offset = coursesSection.offsetTop - 80; // Adjust for navbar height
+      window.scrollTo({
+        top: offset,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -69,7 +114,7 @@ export default function HomePage() {
       <Navbar />
       <ScrollProgress />
       {/* Hero Section */}
-      <section id="hero-section" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+      <section id="hero-section" className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           {/* Text Section */}
           <motion.div
@@ -106,6 +151,106 @@ export default function HomePage() {
               className="object-contain"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
+            
+            {/* Floating Stationery Items */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ 
+                opacity: 1, 
+                y: [0, -15, 0],
+                rotate: [0, 5, 0]
+              }}
+              transition={{ 
+                duration: 0.5, 
+                delay: 0.5,
+                y: {
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                },
+                rotate: {
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }
+              }}
+              className="absolute top-1/4 -right-8"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+            >
+              <Image
+                src="/pencil.png"
+                alt="قلم"
+                width={60}
+                height={60}
+                className="object-contain"
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ 
+                opacity: 1, 
+                y: [0, -12, 0],
+                rotate: [0, -5, 0]
+              }}
+              transition={{ 
+                duration: 0.5, 
+                delay: 0.7,
+                y: {
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                },
+                rotate: {
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }
+              }}
+              className="absolute bottom-1/4 -left-4"
+              whileHover={{ scale: 1.1, rotate: -5 }}
+            >
+              <Image
+                src="/eraser.png"
+                alt="ممحاة"
+                width={50}
+                height={50}
+                className="object-contain"
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ 
+                opacity: 1, 
+                y: [0, -18, 0],
+                rotate: [0, 10, 0]
+              }}
+              transition={{ 
+                duration: 0.5, 
+                delay: 0.9,
+                y: {
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                },
+                rotate: {
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }
+              }}
+              className="absolute top-1/2 -right-12"
+              whileHover={{ scale: 1.1, rotate: 10 }}
+            >
+              <Image
+                src="/ruler.png"
+                alt="مسطرة"
+                width={70}
+                height={70}
+                className="object-contain"
+              />
+            </motion.div>
           </motion.div>
         </div>
 
@@ -145,89 +290,87 @@ export default function HomePage() {
 
       {/* Courses Section */}
       <section id="courses-section" className="py-20 bg-muted/50">
-        <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="container mx-auto px-4"
+        >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, delay: 0.2 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">الدورات التعليمية</h2>
+            <h2 className="text-3xl font-bold mb-4">الدورات المتاحة</h2>
             <p className="text-muted-foreground">اكتشف مجموعة متنوعة من الدورات التعليمية المميزة</p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+          >
             {isLoading ? (
               // Loading skeleton
-              Array.from({ length: 3 }).map((_, index) => (
+              Array.from({ length: 6 }).map((_, index) => (
                 <div
                   key={index}
-                  className="bg-card rounded-lg p-6 shadow-lg animate-pulse"
+                  className="bg-card rounded-xl overflow-hidden border shadow-sm animate-pulse"
                 >
-                  <div className="h-48 bg-muted rounded-md mb-4"></div>
-                  <div className="h-6 bg-muted rounded-md mb-2"></div>
-                  <div className="h-4 bg-muted rounded-md mb-4"></div>
-                  <div className="h-10 bg-muted rounded-md"></div>
+                  <div className="w-full aspect-video bg-muted" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-muted rounded w-3/4" />
+                    <div className="h-4 bg-muted rounded w-1/2" />
+                  </div>
                 </div>
               ))
-            ) : courses.length === 0 ? (
-              <div className="col-span-full text-center text-muted-foreground">
-                لا توجد دورات متاحة حالياً
-              </div>
             ) : (
-              courses.map((course, index) => {
-                const chapters = course.chapters ?? [];
-                const hasChapters = chapters.length > 0;
-                const firstChapter = hasChapters ? chapters[0] : null;
-
-                return (
-                  <motion.div
-                    key={course.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    className="bg-card rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow"
-                  >
-                    <div className="relative h-48 bg-muted rounded-md mb-4 overflow-hidden">
-                      {course.imageUrl ? (
-                        <Image
-                          src={course.imageUrl}
-                          alt={course.title}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                          لا توجد صورة
-                        </div>
-                      )}
+              courses.map((course, index) => (
+                <motion.div
+                  key={course.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="group bg-card rounded-xl overflow-hidden border shadow-sm hover:shadow-md transition-all"
+                >
+                  <div className="relative w-full aspect-video">
+                    <Image
+                      src={course.imageUrl || "/placeholder.png"}
+                      alt={course.title}
+                      fill
+                      className="object-cover rounded-t-xl"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+                      {course.title}
+                    </h3>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                      <BookOpen className="h-4 w-4" />
+                      <span>{course.chapters?.length || 0} {course.chapters?.length === 1 ? "فصل" : "فصول"}</span>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-                    <p className="text-muted-foreground mb-4 line-clamp-2">
-                      {course.description || "لا يوجد وصف للدورة"}
-                    </p>
                     <Button 
-                      variant="outline" 
-                      className="w-full" 
+                      className="w-full bg-[#BC8B26] hover:bg-[#BC8B26]/90 text-white" 
+                      variant="default"
                       asChild
-                      disabled={!hasChapters}
                     >
-                      <Link 
-                        href={hasChapters && firstChapter
-                          ? `/courses/${course.id}/chapters/${firstChapter.id}`
-                          : `/courses/${course.id}`
-                        }
-                      >
-                        {hasChapters ? "ابدأ التعلم" : "عرض التفاصيل"}
+                      <Link href={course.chapters && course.chapters.length > 0 ? `/courses/${course.id}/chapters/${course.chapters[0].id}` : `/courses/${course.id}`}>
+                        {course.progress === 100 ? "عرض الدورة" : "عرض الدورة"}
                       </Link>
                     </Button>
-                  </motion.div>
-                );
-              })
+                  </div>
+                </motion.div>
+              ))
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* Testimonials Section */}
@@ -297,61 +440,76 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Experience Section */}
+      {/* Features Section */}
       <section className="py-20 bg-muted/50">
-        <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="container mx-auto px-4"
+        >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, delay: 0.2 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">الخبرة والرؤية</h2>
-            <p className="text-muted-foreground">تعرف على خبراتنا وفلسفتنا التعليمية</p>
+            <h2 className="text-3xl font-bold mb-4">مميزات المنصة</h2>
+            <p className="text-muted-foreground">اكتشف ما يجعل منصتنا مميزة</p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="text-center"
-            >
-              <Users className="h-12 w-12 mx-auto mb-4 text-primary" />
-              <h3 className="text-xl font-semibold mb-2">خبرة واسعة</h3>
-              <p className="text-muted-foreground">
-                سنوات من الخبرة في تدريس المواد الدراسية
-              </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="text-center"
-            >
-              <BookOpen className="h-12 w-12 mx-auto mb-4 text-primary" />
-              <h3 className="text-xl font-semibold mb-2">منهج متكامل</h3>
-              <p className="text-muted-foreground">
-                شرح مبسط ومنهجية سهلة في توصيل المعلومة
-              </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="text-center"
+              className="text-center p-6 rounded-xl bg-card border shadow-sm hover:shadow-md transition-all"
             >
-              <Award className="h-12 w-12 mx-auto mb-4 text-primary" />
-              <h3 className="text-xl font-semibold mb-2">نتائج متميزة</h3>
-              <p className="text-muted-foreground">
-                نجاحات وإنجازات طلابنا خير دليل
-              </p>
+              <div className="w-12 h-12 bg-[#BC8B26]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="h-6 w-6 text-[#BC8B26]" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">جودة عالية</h3>
+              <p className="text-muted-foreground">دورات تعليمية عالية الجودة مع أفضل المدرسين</p>
             </motion.div>
-          </div>
-        </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="text-center p-6 rounded-xl bg-card border shadow-sm hover:shadow-md transition-all"
+            >
+              <div className="w-12 h-12 bg-[#BC8B26]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="h-6 w-6 text-[#BC8B26]" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">مجتمع نشط</h3>
+              <p className="text-muted-foreground">انضم إلى مجتمع من الطلاب النشطين والمتحمسين</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="text-center p-6 rounded-xl bg-card border shadow-sm hover:shadow-md transition-all"
+            >
+              <div className="w-12 h-12 bg-[#BC8B26]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="h-6 w-6 text-[#BC8B26]" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">شهادات معتمدة</h3>
+              <p className="text-muted-foreground">احصل على شهادات معتمدة عند إكمال الدورات</p>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* CTA Section */}

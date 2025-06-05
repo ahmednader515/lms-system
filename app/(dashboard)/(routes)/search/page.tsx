@@ -1,90 +1,167 @@
-import { db } from "@/lib/db";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { SearchInput } from "./_components/search-input";
-import { CoursesList } from "./_components/courses-list";
-import { CategoryFilter } from "./_components/category-filter";
+import { Button } from "@/components/ui/button";
+import { BookOpen, Clock, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Course, Purchase } from "@prisma/client";
 
 interface SearchPageProps {
     searchParams: {
         title: string;
-        categoryId: string;
     };
+}
+
+type CourseWithDetails = Course & {
+    chapters: { id: string }[];
+    purchases: Purchase[];
+    progress: number;
 }
 
 const SearchPage = async ({
     searchParams
 }: SearchPageProps) => {
-    const { userId } = await auth();
+    const session = await getServerSession(authOptions);
 
-    if (!userId) {
+    if (!session?.user?.id) {
         return redirect("/");
     }
-
-    const categories = await db.category.findMany({
-        orderBy: {
-            name: "asc"
-        }
-    });
 
     const courses = await db.course.findMany({
         where: {
             isPublished: true,
-            ...(searchParams.title && {
-                title: {
-                    contains: searchParams.title,
-                }
-            }),
-            ...(searchParams.categoryId && {
-                categoryId: searchParams.categoryId
-            })
+            title: {
+                contains: searchParams.title,
+            }
         },
         include: {
-            category: true,
             chapters: {
                 where: {
                     isPublished: true,
                 },
                 select: {
-                    id: true
+                    id: true,
                 }
             },
             purchases: {
                 where: {
-                    userId,
-                    payment: {
-                        status: "COMPLETED"
-                    }
-                },
-                select: {
-                    id: true,
-                    payment: {
-                        select: {
-                            status: true
-                        }
-                    }
+                    userId: session.user.id,
                 }
             }
         },
         orderBy: {
-            createdAt: "desc"
+            createdAt: "desc",
         }
     });
 
+    const coursesWithProgress = await Promise.all(
+        courses.map(async (course) => {
+            const totalChapters = course.chapters.length;
+            const completedChapters = await db.userProgress.count({
+                where: {
+                    userId: session.user.id,
+                    chapterId: {
+                        in: course.chapters.map(chapter => chapter.id)
+                    },
+                    isCompleted: true
+                }
+            });
+
+            const progress = totalChapters > 0 
+                ? (completedChapters / totalChapters) * 100 
+                : 0;
+
+            return {
+                ...course,
+                progress
+            } as CourseWithDetails;
+        })
+    );
+
     return (
-        <div className="p-6 space-y-4">
-            <div className="space-y-3">
-                <div>
-                    <h1 className="text-2xl font-bold">استكشف الدورات</h1>
-                    <p className="text-sm text-muted-foreground">
-                        استكشف مجموعة كبيرة من الدورات
-                    </p>
-                </div>
+        <>
+            <div className="px-6 pt-6 md:hidden md:mb-0 block">
                 <SearchInput />
             </div>
-            <CoursesList items={courses} />
-        </div>
+            <div className="p-6 space-y-4">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold mb-2">البحث عن الدورات</h1>
+                    <p className="text-muted-foreground">
+                        {searchParams.title 
+                            ? `نتائج البحث عن "${searchParams.title}"`
+                            : "اكتشف مجموعة متنوعة من الدورات التعليمية المميزة"
+                        }
+                    </p>
+                </div>
+                <div className="hidden md:block mb-6">
+                    <SearchInput />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {coursesWithProgress.map((course) => (
+                        <div
+                            key={course.id}
+                            className="group bg-card rounded-xl overflow-hidden border shadow-sm hover:shadow-md transition-all"
+                        >
+                            <div className="relative w-full aspect-video">
+                                <Image
+                                    src={course.imageUrl || "/placeholder.png"}
+                                    alt={course.title}
+                                    fill
+                                    className="object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                            <div className="p-4">
+                                <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+                                    {course.title}
+                                </h3>
+                                <div className="flex flex-col gap-2 text-sm text-muted-foreground mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <BookOpen className="h-4 w-4" />
+                                        <span>{course.chapters.length} {course.chapters.length === 1 ? "فصل" : "فصول"}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="h-4 w-4" />
+                                        <span>آخر تحديث: {new Date(course.updatedAt).toLocaleDateString('ar', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        })}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Users className="h-4 w-4" />
+                                        <span>{course.purchases.length} طالب</span>
+                                    </div>
+                                </div>
+                                <Button 
+                                    className="w-full bg-[#BC8B26] hover:bg-[#BC8B26]/90 text-white" 
+                                    variant={course.purchases.length > 0 ? "secondary" : "default"}
+                                    asChild
+                                >
+                                    <Link href={course.chapters.length > 0 ? `/courses/${course.id}/chapters/${course.chapters[0].id}` : `/courses/${course.id}`}>
+                                        {course.purchases.length > 0 ? "متابعة التعلم" : "عرض الدورة"}
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                {coursesWithProgress.length === 0 && (
+                    <div className="text-center py-10">
+                        <div className="text-muted-foreground mb-4">لم يتم العثور على دورات</div>
+                        <Button asChild className="bg-[#BC8B26] hover:bg-[#BC8B26]/90 text-white">
+                            <Link href="/search">
+                                عرض جميع الدورات
+                            </Link>
+                        </Button>
+                    </div>
+                )}
+            </div>
+        </>
     );
-}
+};
 
 export default SearchPage;

@@ -30,7 +30,7 @@ export async function PATCH(
 
         const hasPublishedChapters = course.chapters.some((chapter) => chapter.isPublished);
 
-        if (!course.title || !course.description || !course.imageUrl || !course.categoryId || !hasPublishedChapters) {
+        if (!course.title || !course.description || !course.imageUrl || !hasPublishedChapters) {
             return new NextResponse("Missing required fields", { status: 401 });
         }
 

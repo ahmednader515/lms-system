@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ChevronLeft } from "lucide-react";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -65,6 +65,13 @@ export default function SignInPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="absolute top-4 left-4">
+        <Button variant="ghost" size="lg" asChild>
+          <Link href="/">
+            <ChevronLeft className="h-10 w-10" />
+          </Link>
+        </Button>
+      </div>
       <div className="w-full max-w-md space-y-8 p-8">
         <div className="space-y-2 text-center">
           <h2 className="text-3xl font-bold tracking-tight">

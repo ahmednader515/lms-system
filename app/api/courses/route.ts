@@ -33,22 +33,8 @@ export async function GET() {
         isPublished: true,
       },
       include: {
-        category: true,
-        user: {
-          select: {
-            name: true,
-            image: true,
-          },
-        },
-        chapters: {
-          where: {
-            isPublished: true,
-          },
-          orderBy: {
-            position: "asc",
-          },
-          take: 1,
-        },
+        user: true,
+        chapters: true,
       },
       orderBy: {
         createdAt: "desc",

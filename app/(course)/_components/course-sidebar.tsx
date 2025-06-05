@@ -89,7 +89,7 @@ export const CourseSidebar = ({ course }: CourseSidebarProps) => {
 
   if (error) {
     return (
-      <div className="h-full border-r flex flex-col overflow-y-auto shadow-lg">
+      <div className="h-full border-l flex flex-col overflow-y-auto shadow-lg w-64 md:w-80">
         <div className="p-8 flex flex-col border-b">
           <h1 className="font-semibold">حدث خطأ</h1>
         </div>
@@ -101,7 +101,7 @@ export const CourseSidebar = ({ course }: CourseSidebarProps) => {
   }
 
   return (
-    <div className="h-full border-r flex flex-col overflow-y-auto shadow-lg">
+    <div className="h-full border-l flex flex-col overflow-y-auto shadow-lg w-64 md:w-80">
       <div className="p-8 flex flex-col border-b">
         <h1 className="font-semibold">{courseTitle || course?.title}</h1>
       </div>
@@ -127,7 +127,12 @@ export const CourseSidebar = ({ course }: CourseSidebarProps) => {
               ) : (
                 <Circle className="h-4 w-4" />
               )}
-              <span className="rtl:text-right ltr:text-left">{chapter.title}</span>
+              <span className="rtl:text-right ltr:text-left flex-grow mr-1">{chapter.title}</span>
+              {chapter.isFree && (
+                <span className="ml-4 px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full dark:bg-blue-800 dark:text-blue-100">
+                  مجاني
+                </span>
+              )}
             </div>
           );
         })}
