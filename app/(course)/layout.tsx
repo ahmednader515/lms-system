@@ -2,15 +2,12 @@
 
 import { CourseNavbar } from "./_components/course-navbar";
 import { CourseSidebar } from "./_components/course-sidebar";
-import { useParams } from "next/navigation";
 
 const CourseLayout = ({
     children,
 }: {
     children: React.ReactNode;
 }) => {
-    const params = useParams();
-
     return (
         <div className="h-full">
             <div className="h-[80px] fixed inset-x-0 top-0 w-full z-50">

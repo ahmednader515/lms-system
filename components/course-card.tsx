@@ -1,10 +1,9 @@
 "use client";
 
 import { formatPrice } from "@/lib/format";
-import { useRouter } from "next/navigation";
-import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import Image from "next/image";
+import { Progress } from "@/components/ui/progress";
 
 interface CourseCardProps {
     id: string;
@@ -23,8 +22,6 @@ export const CourseCard = ({
     price,
     progress,
 }: CourseCardProps) => {
-    const router = useRouter();
-
     return (
         <Link href={`/courses/${id}`}>
             <div className="group hover:shadow-sm transition overflow-hidden border rounded-lg p-3 h-full">
