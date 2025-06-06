@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   experimental: {
     serverActions: {
       allowedOrigins: ['localhost:3000'],
@@ -10,6 +11,12 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  images: {
+    domains: [
+      "utfs.io",
+      "7o7q29b8xy.ufs.sh"
+    ],
   },
   webpack: (config) => {
     config.externals = [

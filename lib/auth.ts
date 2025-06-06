@@ -5,6 +5,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db";
 import GoogleProvider from "next-auth/providers/google";
 import { Adapter } from "next-auth/adapters";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 
 export const auth = async () => {
   const session = await getServerSession(authOptions);
@@ -26,12 +28,56 @@ export const authOptions: AuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+        phoneNumber: { label: "Phone Number", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Missing credentials");
+        }
+
+        const user = await db.user.findUnique({
+          where: {
+            email: credentials.email,
+          },
+        });
+
+        if (!user || !user.hashedPassword) {
+          throw new Error("Invalid credentials");
+        }
+
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.hashedPassword
+        );
+
+        if (!isPasswordValid) {
+          throw new Error("Invalid credentials");
+        }
+
+        if (!user.emailVerified) {
+          throw new Error("EmailNotVerified");
+        }
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        };
+      },
+    }),
   ],
   session: {
     strategy: "jwt",
   },
   pages: {
-    signIn: "/",
+    signIn: "/sign-in",
+    error: "/sign-in",
   },
   callbacks: {
     async session({ token, session }) {
