@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { CourseCard } from "@/components/course-card";
-import { SearchInput } from "./_components/search-input";
+import { SearchInputWrapper } from "./_components/search-input-wrapper";
 
 interface SearchPageProps {
     searchParams: {
@@ -38,7 +38,7 @@ const SearchPage = async ({
     return (
         <>
             <div className="px-6 pt-6 md:hidden md:mb-0 block">
-                <SearchInput />
+                <SearchInputWrapper />
             </div>
             <div className="p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
