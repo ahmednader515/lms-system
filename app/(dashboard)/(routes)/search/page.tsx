@@ -15,19 +15,19 @@ type CourseWithDetails = Course & {
     progress: number;
 }
 
-type SearchPageProps = {
-    searchParams: { title?: string }
-}
-
-export default async function SearchPage(props: SearchPageProps) {
-    const { searchParams } = props;
+export default async function SearchPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
         return redirect("/");
     }
 
-    const title = typeof searchParams.title === 'string' ? searchParams.title : '';
+    const resolvedParams = await searchParams;
+    const title = typeof resolvedParams.title === 'string' ? resolvedParams.title : '';
 
     const courses = await db.course.findMany({
         where: {

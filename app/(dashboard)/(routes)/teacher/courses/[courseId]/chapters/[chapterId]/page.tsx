@@ -8,13 +8,15 @@ import { ArrowLeft, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IconBadge } from "@/components/icon-badge";
 
-const ChapterIdPage = async ({
-    params
+export default async function ChapterPage({
+    params,
 }: {
-    params: { courseId: string; chapterId: string }
-}) => {
+    params: Promise<{ courseId: string; chapterId: string }>
+}) {
+    const resolvedParams = await params;
+    const { courseId, chapterId } = resolvedParams;
+
     const { userId } = await auth();
-    const { courseId, chapterId } = await params;
 
     if (!userId) {
         return redirect("/");
@@ -87,6 +89,4 @@ const ChapterIdPage = async ({
             </div>
         </div>
     );
-}
-
-export default ChapterIdPage; 
+} 

@@ -12,11 +12,14 @@ import { ChaptersForm } from "./_components/chapters-form";
 import { Banner } from "@/components/banner";
 import { Actions } from "./_components/actions";
 
-const CourseIdPage = async ({
-    params
+export default async function CourseIdPage({
+    params,
 }: {
-    params: { courseId: string }
-}) => {
+    params: Promise<{ courseId: string }>
+}) {
+    const resolvedParams = await params;
+    const { courseId } = resolvedParams;
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -25,7 +28,7 @@ const CourseIdPage = async ({
 
     const course = await db.course.findUnique({
         where: {
-            id: params.courseId,
+            id: courseId,
             userId
         },
         include: {
@@ -81,7 +84,7 @@ const CourseIdPage = async ({
                     </div>
                     <Actions
                         disabled={!isComplete}
-                        courseId={params.courseId}
+                        courseId={courseId}
                         isPublished={course.isPublished}
                     />
                 </div>
@@ -133,5 +136,3 @@ const CourseIdPage = async ({
         </>
     );
 }
-
-export default CourseIdPage;
