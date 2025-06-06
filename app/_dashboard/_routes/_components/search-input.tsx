@@ -4,10 +4,19 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export const SearchInput = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const [searchValue, setSearchValue] = useState("");
+
+    useEffect(() => {
+        const title = searchParams.get("title");
+        if (title) {
+            setSearchValue(title);
+        }
+    }, [searchParams]);
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -16,7 +25,7 @@ export const SearchInput = () => {
         const title = formData.get("title") as string;
 
         if (title) {
-            router.push(`/search?title=${title}`);
+            router.push(`/search?title=${encodeURIComponent(title)}`);
         } else {
             router.push("/search");
         }
@@ -27,7 +36,8 @@ export const SearchInput = () => {
             <Input
                 name="title"
                 placeholder="ابحث عن دورات..."
-                defaultValue={searchParams.get("title") || ""}
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
                 className="h-10"
             />
             <Button type="submit" size="sm">

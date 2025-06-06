@@ -2,13 +2,23 @@
 const nextConfig = {
   output: 'standalone',
   experimental: {
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+    },
   },
   typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  webpack: (config) => {
+    config.externals = [...(config.externals || []), { bufferutil: "bufferutil", "utf-8-validate": "utf-8-validate" }];
+    return config;
+  },
+  serverExternalPackages: ['@prisma/client', 'bcrypt'],
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
   },
 }
 

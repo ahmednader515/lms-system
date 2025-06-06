@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { CourseCard } from "@/components/course-card";
 import { SearchInputWrapper } from "./_components/search-input-wrapper";
+import { Suspense } from "react";
 
 interface SearchPageProps {
     searchParams: {
@@ -36,9 +37,16 @@ const SearchPage = async ({
     });
 
     return (
-        <>
+        <div className="flex flex-col">
             <div className="px-6 pt-6 md:hidden md:mb-0 block">
-                <SearchInputWrapper />
+                <Suspense fallback={
+                    <div className="flex items-center gap-x-2">
+                        <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+                        <div className="h-10 w-10 animate-pulse rounded-md bg-muted" />
+                    </div>
+                }>
+                    <SearchInputWrapper />
+                </Suspense>
             </div>
             <div className="p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
@@ -59,7 +67,7 @@ const SearchPage = async ({
                     ))}
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 
