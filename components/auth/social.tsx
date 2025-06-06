@@ -6,7 +6,7 @@ import { Icons } from "@/components/icons";
 
 export const Social = () => {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
+  const callbackUrl = searchParams.get("callbackUrl") || undefined;
 
   const onClick = (provider: "google" | "github") => {
     signIn(provider, {

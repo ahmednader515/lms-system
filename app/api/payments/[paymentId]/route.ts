@@ -5,21 +5,22 @@ import { verifyPayment } from "@/lib/paytabs";
 
 export async function GET(
   req: Request,
-  { params }: { params: { paymentId: string } }
+  { params }: { params: Promise<{ paymentId: string }> }
 ) {
   try {
     const { userId } = await auth();
+    const resolvedParams = await params;
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    console.log(`[PAYMENT_API] Checking payment status for purchase: ${params.paymentId}`);
+    console.log(`[PAYMENT_API] Checking payment status for purchase: ${resolvedParams.paymentId}`);
 
     // Find the purchase by ID
     const purchase = await db.purchase.findFirst({
       where: {
-        id: params.paymentId,
+        id: resolvedParams.paymentId,
         userId,
       },
       include: {
@@ -28,7 +29,7 @@ export async function GET(
     });
 
     if (!purchase) {
-      console.error(`[PAYMENT_API] Purchase ${params.paymentId} not found`);
+      console.error(`[PAYMENT_API] Purchase ${resolvedParams.paymentId} not found`);
       return new NextResponse("Purchase not found", { status: 404 });
     }
 

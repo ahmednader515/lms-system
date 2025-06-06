@@ -2,56 +2,15 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
-export async function PATCH(
-    req: Request,
-    { params }: { params: { courseId: string; chapterId: string } }
-) {
-    try {
-        const { userId } = await auth();
-        const values = await req.json();
-
-        if (!userId) {
-            return new NextResponse("Unauthorized", { status: 401 });
-        }
-
-        const courseOwner = await db.course.findUnique({
-            where: {
-                id: params.courseId,
-                userId: userId,
-            }
-        });
-
-        if (!courseOwner) {
-            return new NextResponse("Unauthorized", { status: 401 });
-        }
-
-        const chapter = await db.chapter.update({
-            where: {
-                id: params.chapterId,
-                courseId: params.courseId,
-            },
-            data: {
-                ...values,
-            }
-        });
-
-        return NextResponse.json(chapter);
-    } catch (error) {
-        console.log("[CHAPTER_ID]", error);
-        return new NextResponse("Internal Error", { status: 500 });
-    }
-}
-
 export async function GET(
   req: Request,
-  { params }: { params: { courseId: string; chapterId: string } }
+  { params }: { params: Promise<{ courseId: string; chapterId: string }> }
 ) {
   try {
-    const { courseId, chapterId } = params;
-    console.log("[CHAPTER_ID] Fetching chapter:", { courseId, chapterId });
+    const resolvedParams = await params;
+    const { courseId, chapterId } = resolvedParams;
     
     const { userId } = await auth();
-    console.log("[CHAPTER_ID] User ID:", userId);
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -77,13 +36,10 @@ export async function GET(
       }
     });
 
-    console.log("[CHAPTER_ID] Found chapter:", chapter);
-
     if (!chapter) {
       return new NextResponse("Chapter not found", { status: 404 });
     }
 
-    // Get the next and previous chapters
     const nextChapter = await db.chapter.findFirst({
       where: {
         courseId: courseId,
@@ -122,4 +78,45 @@ export async function GET(
     }
     return new NextResponse("Internal Error", { status: 500 });
   }
+}
+
+export async function PATCH(
+    req: Request,
+    { params }: { params: Promise<{ courseId: string; chapterId: string }> }
+) {
+    try {
+        const { userId } = await auth();
+        const resolvedParams = await params;
+        const values = await req.json();
+
+        if (!userId) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        const courseOwner = await db.course.findUnique({
+            where: {
+                id: resolvedParams.courseId,
+                userId: userId,
+            }
+        });
+
+        if (!courseOwner) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        const chapter = await db.chapter.update({
+            where: {
+                id: resolvedParams.chapterId,
+                courseId: resolvedParams.courseId,
+            },
+            data: {
+                ...values,
+            }
+        });
+
+        return NextResponse.json(chapter);
+    } catch (error) {
+        console.log("[CHAPTER_ID]", error);
+        return new NextResponse("Internal Error", { status: 500 });
+    }
 } 

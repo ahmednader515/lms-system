@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(
     req: Request,
-    { params }: { params: { courseId: string } }
+    { params }: { params: Promise<{ courseId: string }> }
 ) {
     try {
         const { userId } = await auth();
@@ -14,9 +14,12 @@ export async function POST(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
+        const resolvedParams = await params;
+        const { courseId } = resolvedParams;
+
         const courseOwner = await db.course.findUnique({
             where: {
-                id: params.courseId,
+                id: courseId,
                 userId: userId,
             }
         });
@@ -29,7 +32,7 @@ export async function POST(
             data: {
                 url,
                 name,
-                courseId: params.courseId,
+                courseId: courseId,
             }
         });
 
@@ -42,7 +45,7 @@ export async function POST(
 
 export async function GET(
     req: Request,
-    { params }: { params: { courseId: string } }
+    { params }: { params: Promise<{ courseId: string }> }
 ) {
     try {
         const { userId } = await auth();
@@ -51,9 +54,12 @@ export async function GET(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
+        const resolvedParams = await params;
+        const { courseId } = resolvedParams;
+
         const courseOwner = await db.course.findUnique({
             where: {
-                id: params.courseId,
+                id: courseId,
                 userId: userId,
             }
         });
@@ -64,7 +70,7 @@ export async function GET(
 
         const attachments = await db.attachment.findMany({
             where: {
-                courseId: params.courseId,
+                courseId: courseId,
             },
             orderBy: {
                 createdAt: "desc",

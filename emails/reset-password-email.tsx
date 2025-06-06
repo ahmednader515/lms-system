@@ -47,7 +47,7 @@ export const ResetPasswordEmail = ({
 const main = {
   backgroundColor: '#ffffff',
   fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
-  direction: 'rtl',
+  direction: 'rtl' as const,
 };
 
 const container = {

@@ -6,11 +6,11 @@ import { MuxVideo } from "@/lib/mux";
 
 export async function POST(
     req: Request,
-    { params }: { params: { courseId: string; chapterId: string } }
+    { params }: { params: Promise<{ courseId: string; chapterId: string }> }
 ) {
     try {
         const { userId } = await auth();
-        const { courseId, chapterId } = await params;
+        const resolvedParams = await params;
 
         if (!userId) {
             return new NextResponse("Unauthorized", { status: 401 });
@@ -18,7 +18,7 @@ export async function POST(
 
         const courseOwner = await db.course.findUnique({
             where: {
-                id: courseId,
+                id: resolvedParams.courseId,
                 userId,
             }
         });
@@ -45,15 +45,15 @@ export async function POST(
             data: {
                 assetId: asset.id,
                 playbackId: asset.playback_ids?.[0]?.id,
-                chapterId: chapterId,
+                chapterId: resolvedParams.chapterId,
             }
         });
 
         // Update chapter with video URL
         await db.chapter.update({
             where: {
-                id: chapterId,
-                courseId,
+                id: resolvedParams.chapterId,
+                courseId: resolvedParams.courseId,
             },
             data: {
                 videoUrl: url,

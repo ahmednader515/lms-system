@@ -12,6 +12,10 @@ interface CourseCardProps {
     chaptersLength: number;
     price: number;
     progress: number | null;
+    user: {
+        name: string;
+        image: string;
+    };
 }
 
 export const CourseCard = ({
@@ -21,6 +25,7 @@ export const CourseCard = ({
     chaptersLength,
     price,
     progress,
+    user,
 }: CourseCardProps) => {
     return (
         <Link href={`/courses/${id}`}>
@@ -50,6 +55,18 @@ export const CourseCard = ({
                             {formatPrice(price)}
                         </p>
                     )}
+                    <div className="flex items-center gap-x-2 mt-2">
+                        <Image
+                            src={user.image}
+                            alt={user.name}
+                            width={24}
+                            height={24}
+                            className="rounded-full"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            {user.name}
+                        </p>
+                    </div>
                 </div>
             </div>
         </Link>

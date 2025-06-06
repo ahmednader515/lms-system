@@ -5,27 +5,28 @@ import { createPaymentLink } from "@/lib/paytabs";
 
 export async function POST(
   req: Request,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
     const { userId } = await auth();
+    const resolvedParams = await params;
 
     if (!userId) {
       console.log("[PURCHASE_ERROR] No user ID found in auth");
       return new NextResponse("Unauthorized - Please sign in to make a purchase", { status: 401 });
     }
 
-    console.log(`[PURCHASE_ATTEMPT] User ${userId} attempting to purchase course ${params.courseId}`);
+    console.log(`[PURCHASE_ATTEMPT] User ${userId} attempting to purchase course ${resolvedParams.courseId}`);
 
     const course = await db.course.findUnique({
       where: {
-        id: params.courseId,
+        id: resolvedParams.courseId,
         isPublished: true,
       },
     });
 
     if (!course) {
-      console.log(`[PURCHASE_ERROR] Course ${params.courseId} not found or not published`);
+      console.log(`[PURCHASE_ERROR] Course ${resolvedParams.courseId} not found or not published`);
       return new NextResponse("Course not found or not available for purchase", { status: 404 });
     }
 
@@ -33,14 +34,14 @@ export async function POST(
       where: {
         userId_courseId: {
           userId,
-          courseId: params.courseId,
+          courseId: resolvedParams.courseId,
         },
       },
     });
 
     // Only block purchase if the status is ACTIVE or PENDING
     if (purchase && (purchase.status === "ACTIVE" || purchase.status === "PENDING")) {
-      console.log(`[PURCHASE_ERROR] User ${userId} already has an active or pending purchase for course ${params.courseId}`);
+      console.log(`[PURCHASE_ERROR] User ${userId} already has an active or pending purchase for course ${resolvedParams.courseId}`);
       
       if (purchase.status === "ACTIVE") {
         return new NextResponse("You have already purchased this course", { status: 400 });
@@ -51,7 +52,7 @@ export async function POST(
 
     // If there's a FAILED purchase record, delete it before creating a new one
     if (purchase && purchase.status === "FAILED") {
-      console.log(`[PURCHASE] Removing previous failed purchase for user ${userId}, course ${params.courseId}`);
+      console.log(`[PURCHASE] Removing previous failed purchase for user ${userId}, course ${resolvedParams.courseId}`);
       
       // Delete the previous payment record if it exists
       const previousPayment = await db.payment.findFirst({
@@ -90,7 +91,7 @@ export async function POST(
     const newPurchase = await db.purchase.create({
       data: {
         userId,
-        courseId: params.courseId,
+        courseId: resolvedParams.courseId,
         status: "PENDING",
       },
     });
@@ -99,13 +100,13 @@ export async function POST(
       // Create a PayTabs payment link
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
       const paymentParams = {
-        courseId: params.courseId,
+        courseId: resolvedParams.courseId,
         courseTitle: course.title,
         amount: course.price || 0,
         customerEmail: user.email,
         customerName: user.name || "Customer",
         callbackUrl: `${baseUrl}/api/webhooks/paytabs`,
-        returnUrl: `${baseUrl}/courses/${params.courseId}/payment-status?purchaseId=${newPurchase.id}&courseId=${params.courseId}`,
+        returnUrl: `${baseUrl}/courses/${resolvedParams.courseId}/payment-status?purchaseId=${newPurchase.id}&courseId=${resolvedParams.courseId}`,
       };
       
       console.log("[PAYTABS_REQUEST] Creating payment link with params:", JSON.stringify(paymentParams, null, 2));

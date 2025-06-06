@@ -4,11 +4,12 @@ import { NextResponse } from "next/server";
 
 export async function GET(
     req: Request,
-    { params }: { params: { courseId: string } }
+    { params }: { params: Promise<{ courseId: string }> }
 ) {
     try {
+        const resolvedParams = await params;
         const { userId } = await auth();
-        const { courseId } = params;
+        const { courseId } = resolvedParams;
 
         if (!userId) {
             return new NextResponse("Unauthorized", { status: 401 });
@@ -57,11 +58,11 @@ export async function GET(
 
 export async function PATCH(
     req: Request,
-    { params }: { params: { courseId: string } }
+    { params }: { params: Promise<{ courseId: string }> }
 ) {
     try {
         const { userId } = await auth();
-        const { courseId } = params;
+        const resolvedParams = await params;
         const values = await req.json();
 
         if (!userId) {
@@ -70,7 +71,7 @@ export async function PATCH(
 
         const course = await db.course.update({
             where: {
-                id: courseId,
+                id: resolvedParams.courseId,
                 userId
             },
             data: {
@@ -87,10 +88,11 @@ export async function PATCH(
 
 export async function DELETE(
     req: Request,
-    { params }: { params: { courseId: string } }
+    { params }: { params: Promise<{ courseId: string }> }
 ) {
     try {
         const { userId } = await auth();
+        const resolvedParams = await params;
 
         if (!userId) {
             return new NextResponse("Unauthorized", { status: 401 });
@@ -98,7 +100,7 @@ export async function DELETE(
 
         const course = await db.course.findUnique({
             where: {
-                id: params.courseId,
+                id: resolvedParams.courseId,
                 userId: userId,
             }
         });
@@ -109,7 +111,7 @@ export async function DELETE(
 
         const deletedCourse = await db.course.delete({
             where: {
-                id: params.courseId,
+                id: resolvedParams.courseId,
             },
         });
 

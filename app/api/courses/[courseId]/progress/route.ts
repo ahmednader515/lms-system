@@ -4,45 +4,31 @@ import { db } from "@/lib/db";
 
 export async function GET(
   req: Request,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
     const { userId } = await auth();
+    const resolvedParams = await params;
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Get all chapters in the course
-    const chapters = await db.chapter.findMany({
-      where: {
-        courseId: params.courseId,
-        isPublished: true,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    // Get completed chapters
-    const completedChapters = await db.userProgress.count({
+    const progress = await db.userProgress.findMany({
       where: {
         userId,
-        chapterId: {
-          in: chapters.map((chapter) => chapter.id),
-        },
-        isCompleted: true,
+        chapter: {
+          courseId: resolvedParams.courseId,
+        }
       },
+      include: {
+        chapter: true,
+      }
     });
 
-    // Calculate progress percentage
-    const progress = chapters.length > 0 
-      ? Math.round((completedChapters / chapters.length) * 100)
-      : 0;
-
-    return NextResponse.json({ progress });
+    return NextResponse.json(progress);
   } catch (error) {
-    console.log("[COURSE_PROGRESS]", error);
+    console.log("[PROGRESS]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 } 

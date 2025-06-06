@@ -4,11 +4,13 @@ import { db } from "@/lib/db";
 
 export async function GET(
   req: Request,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
+  const resolvedParams = await params;
+  const { courseId } = resolvedParams;
+
   try {
     const { userId } = await auth();
-    const { courseId } = params;
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });

@@ -4,10 +4,11 @@ import { db } from "@/lib/db";
 
 export async function PUT(
   req: Request,
-  { params }: { params: { courseId: string; chapterId: string } }
+  { params }: { params: Promise<{ courseId: string; chapterId: string }> }
 ) {
   try {
     const { userId } = await auth();
+    const resolvedParams = await params;
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -17,7 +18,7 @@ export async function PUT(
       where: {
         userId_chapterId: {
           userId,
-          chapterId: params.chapterId,
+          chapterId: resolvedParams.chapterId,
         },
       },
       update: {
@@ -25,7 +26,7 @@ export async function PUT(
       },
       create: {
         userId,
-        chapterId: params.chapterId,
+        chapterId: resolvedParams.chapterId,
         isCompleted: true,
       },
     });
@@ -39,10 +40,11 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { courseId: string; chapterId: string } }
+  { params }: { params: Promise<{ courseId: string; chapterId: string }> }
 ) {
   try {
     const { userId } = await auth();
+    const resolvedParams = await params;
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -53,7 +55,7 @@ export async function DELETE(
       where: {
         userId_chapterId: {
           userId,
-          chapterId: params.chapterId,
+          chapterId: resolvedParams.chapterId,
         },
       },
     });
@@ -66,7 +68,7 @@ export async function DELETE(
       where: {
         userId_chapterId: {
           userId,
-          chapterId: params.chapterId,
+          chapterId: resolvedParams.chapterId,
         },
       },
     });

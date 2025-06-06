@@ -1,12 +1,10 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { NextAuthOptions } from "next-auth";
+import { AuthOptions } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db";
-import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
+import GoogleProvider from "next-auth/providers/google";
 import { Adapter } from "next-auth/adapters";
-import { JWT } from "next-auth/jwt";
 
 export const auth = async () => {
   const session = await getServerSession(authOptions);
@@ -21,89 +19,42 @@ export const auth = async () => {
   };
 };
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(db) as Adapter,
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+  ],
   session: {
     strategy: "jwt",
   },
   pages: {
-    signIn: "/sign-in",
-    signOut: "/sign-in",
-    error: "/sign-in",
-    verifyRequest: "/verify-email",
+    signIn: "/",
   },
-  providers: [
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-        phoneNumber: { label: "Phone Number", type: "tel" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password || !credentials?.phoneNumber) {
-          throw new Error("Missing credentials");
-        }
-
-        const user = await db.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        });
-
-        if (!user || !user.hashedPassword) {
-          throw new Error("Invalid credentials");
-        }
-
-        if (!user.emailVerified) {
-          throw new Error("Please verify your email first");
-        }
-
-        if (user.phoneNumber !== credentials.phoneNumber) {
-          throw new Error("Invalid phone number");
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.hashedPassword
-        );
-
-        if (!isPasswordValid) {
-          throw new Error("Invalid credentials");
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          role: user.role,
-        };
-      },
-    }),
-  ],
   callbacks: {
     async session({ token, session }) {
       if (token) {
-        session.user.id = token.id as string;
-        session.user.name = token.name as string;
-        session.user.email = token.email as string;
-        session.user.phoneNumber = token.phoneNumber as string;
-        session.user.role = token.role as string;
+        session.user.id = token.id;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.image = token.picture ?? undefined;
+        session.user.role = token.role;
       }
 
       return session;
     },
-    async jwt({ token, user }): Promise<JWT> {
+    async jwt({ token, user }) {
       const dbUser = await db.user.findFirst({
         where: {
-          email: token.email as string,
+          email: token.email,
         },
       });
 
       if (!dbUser) {
         if (user) {
-          token.id = user.id;
+          token.id = user?.id;
         }
         return token;
       }
@@ -112,9 +63,9 @@ export const authOptions: NextAuthOptions = {
         id: dbUser.id,
         name: dbUser.name,
         email: dbUser.email,
-        phoneNumber: dbUser.phoneNumber,
+        picture: dbUser.image,
         role: dbUser.role,
-      } as JWT;
+      };
     },
   },
 }; 
